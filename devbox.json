@@ -1,0 +1,24 @@
+{
+  "packages": [
+    "lua@5.2.4",
+    "luajit@2.1.1693350652",
+    "luajitPackages.busted@2.2.0-1",
+    "luajitPackages.lua-curl@0.3.13-1",
+    "luajitPackages.lua-zlib@1.2-2",
+    "luajitPackages.luaposix@34.1.1-1",
+    "curl@8.6.0",
+    "stdenv.cc.cc.lib"
+  ],
+  "env": {
+    "LUA_PATH": "../runtime/lua/?.lua;../runtime/lua/?/init.lua"
+  },
+  "shell": {
+    "init_hook": [
+      "echo 'Welcome to devbox!'"
+    ],
+    "scripts": {
+      "install": "./install_emmy.sh",
+      "launch":  "pushd src && luajit HeadlessWrapper.lua"
+    }
+  }
+}

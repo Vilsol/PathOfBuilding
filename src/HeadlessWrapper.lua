@@ -2,6 +2,15 @@
 -- This wrapper allows the program to run headless on any OS (in theory)
 -- It can be run using a standard lua interpreter, although LuaJIT is preferable
 
+local function read_file(path)
+    local file = io.open(path, "rb")
+    if not file then return nil end
+    local content = file:read "*a"
+    file:close()
+    return content
+end
+
+local fireballBuild = read_file("../Builds/1.xml")
 
 -- Callbacks
 local callbackTable = { }
@@ -196,3 +205,9 @@ function loadBuildFromJSON(getItemsJSON, getPassiveSkillsJSON)
 	-- You now have a build without a correct main skill selected, or any configuration options set
 	-- Good luck!
 end
+
+loadBuildFromXML(fireballBuild, "Fireball")
+
+print(modLib)
+xyx = modLib.parseMod("Brand Recall has 4% increased Cooldown Recovery Rate per Brand, up to a maximum of 40%", true)
+print(xyz)
