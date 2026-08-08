@@ -15,14 +15,21 @@ launch = { }
 SetMainObject(launch)
 
 function launch:OnInit()
-	-- This is the path to emmy_core.dll. The ?.dll at the end is intentional.
-	package.cpath = package.cpath .. ';../.devbox/emmylua/?.so'
-	-- package.cpath = package.cpath .. ";C:/Users/someuser/.vscode/extensions/tangzx.emmylua-0.3.28/debugger/emmy/windows/x86/?.dll"
-	local dbg = require("emmy_core")
-	-- This port must match the Visual Studio Code configuration. Default is 9966.
-	dbg.tcpListen("localhost", 9966)
-	-- Uncomment the next line if you want Path of Building to block until the debugger is attached
-	-- dbg.waitIDE()
+	-- Fork-local: EmmyLua debugger, OFF unless POB_DEBUG is set. It binds a fixed TCP port,
+	-- so leaving it on made a SECOND concurrent PoB die with "[Emmy]address already in use".
+	-- That is where go-pob's "only one headless PoB at a time" rule came from -- a debugger
+	-- listener, nothing to do with calculation. POB_DEBUG is the name mise.toml's `launch`
+	-- task already documents. POB_DEBUG_PORT lets two debug sessions coexist.
+	if os.getenv("POB_DEBUG") then
+		-- This is the path to emmy_core.dll. The ?.dll at the end is intentional.
+		package.cpath = package.cpath .. ';../.devbox/emmylua/?.so'
+		-- package.cpath = package.cpath .. ";C:/Users/someuser/.vscode/extensions/tangzx.emmylua-0.3.28/debugger/emmy/windows/x86/?.dll"
+		local dbg = require("emmy_core")
+		-- This port must match the Visual Studio Code configuration. Default is 9966.
+		dbg.tcpListen("localhost", tonumber(os.getenv("POB_DEBUG_PORT")) or 9966)
+		-- Uncomment the next line if you want Path of Building to block until the debugger is attached
+		-- dbg.waitIDE()
+	end
 
 	self.devMode = false
 	self.installedMode = false
