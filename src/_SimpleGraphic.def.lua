@@ -382,7 +382,7 @@ end
 ---@return string? scriptFallback
 ---@return string? errMsg
 function GetScriptPath()
-	return ""
+	return "."
 end
 
 ---@return string  runtimePath
