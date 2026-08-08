@@ -1,0 +1,43 @@
+[tools]
+luajit = "2.1.1744318430"
+"github:luarocks/luarocks" = "3.11.1"
+# zig is used only as the C compiler for luarocks' C modules (luasystem, lfs, term).
+# This machine has no system gcc/cc.
+zig = "0.13.0"
+
+[env]
+# Vendored Lua libs (xml, dkjson, sha1) live in runtime/lua; rocks go in a repo-local tree.
+LUA_PATH = "{{config_root}}/runtime/lua/?.lua;{{config_root}}/runtime/lua/?/init.lua;{{config_root}}/.luarocks/share/lua/5.1/?.lua;{{config_root}}/.luarocks/share/lua/5.1/?/init.lua;;"
+LUA_CPATH = "{{config_root}}/.luarocks/lib/lua/5.1/?.so;;"
+_.path = ["{{config_root}}/.luarocks/bin"]
+
+[tasks.bootstrap]
+description = "Install busted + luacov into the repo-local luarocks tree"
+run = '''
+set -euo pipefail
+LJ="$(mise where luajit)"
+mkdir -p .luarocks/stub
+# glibc >= 2.34 folded librt into libc, but luasystem's rockspec still probes for it.
+: > .luarocks/stub/empty.c
+zig cc -shared -o .luarocks/stub/librt.so .luarocks/stub/empty.c
+for rock in busted luacov; do
+  luarocks --lua-version=5.1 --lua-dir="$LJ" --tree="$PWD/.luarocks" \
+    LUA_INCDIR="$LJ/include/luajit-2.1" LUA_LIBDIR="$LJ/lib" \
+    RT_LIBDIR="$PWD/.luarocks/stub" RT_INCDIR=/usr/include \
+    CC="zig cc" LD="zig cc" install "$rock"
+done
+'''
+outputs = { auto = true }
+
+[tasks.test]
+description = "Run the busted spec suite"
+run = "busted --lua=$(mise which luajit)"
+
+[tasks.generate]
+description = "Regenerate TestBuilds expected-output snapshots"
+run = "busted --lua=$(mise which luajit) -r generate"
+
+[tasks.launch]
+description = "Run PoB headless (set POB_DEBUG=1 to wait for the emmylua debugger)"
+dir = "{{config_root}}/src"
+run = "luajit HeadlessWrapper.lua"

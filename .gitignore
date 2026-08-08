@@ -33,6 +33,16 @@ src/Export/ggpk/*.dll
 *_currency_values.json
 
 # Timeless Jewels
+# Fork-local: the headless/dumper toolchain (mise.toml, added in the same commit)
+# `mise run bootstrap` installs busted + luacov into a repo-local luarocks tree.
+.luarocks/
+
+# Fork-local: PoB writes 0-byte .bin stubs here when a timeless-jewel LUT lookup
+# misses. The REAL data is the tracked .zip files beside them; the .bin are debris
+# PoB never opens. Headless sets main.userPath = "/" so loadJewelFile looks under
+# the FILESYSTEM ROOT and always misses -- see docs/POB_UPGRADE.md in go-pob.
+# NOT committed on purpose: scripts/pob_pin.py hashes TRACKED files under src/,
+# so tracking these would make the oracle's pin unstable for no benefit.
 src/Data/TimelessJewelData/*.bin
 
 # Simplegraphic Debugging
