@@ -104,7 +104,7 @@ function GetTime()
 	return 0
 end
 function GetScriptPath()
-	return ""
+	return "."
 end
 function GetRuntimePath()
 	return ""
