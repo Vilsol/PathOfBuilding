@@ -7,6 +7,8 @@ zig = "0.13.0"
 
 [env]
 # Vendored Lua libs (xml, dkjson, sha1) live in runtime/lua; rocks go in a repo-local tree.
+# NOTE: luautf8 is a RUNTIME dependency, not test tooling -- PoB 2.67.2's Modules/Common.lua:29
+# does `require('lua-utf8')` unconditionally, so without it headless dies before loading a build.
 LUA_PATH = "{{config_root}}/runtime/lua/?.lua;{{config_root}}/runtime/lua/?/init.lua;{{config_root}}/.luarocks/share/lua/5.1/?.lua;{{config_root}}/.luarocks/share/lua/5.1/?/init.lua;;"
 LUA_CPATH = "{{config_root}}/.luarocks/lib/lua/5.1/?.so;;"
 _.path = ["{{config_root}}/.luarocks/bin"]
@@ -20,7 +22,7 @@ mkdir -p .luarocks/stub
 # glibc >= 2.34 folded librt into libc, but luasystem's rockspec still probes for it.
 : > .luarocks/stub/empty.c
 zig cc -shared -o .luarocks/stub/librt.so .luarocks/stub/empty.c
-for rock in busted luacov; do
+for rock in busted luacov luautf8; do
   luarocks --lua-version=5.1 --lua-dir="$LJ" --tree="$PWD/.luarocks" \
     LUA_INCDIR="$LJ/include/luajit-2.1" LUA_LIBDIR="$LJ/lib" \
     RT_LIBDIR="$PWD/.luarocks/stub" RT_INCDIR=/usr/include \
