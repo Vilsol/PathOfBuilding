@@ -22,7 +22,7 @@ mkdir -p .luarocks/stub
 # glibc >= 2.34 folded librt into libc, but luasystem's rockspec still probes for it.
 : > .luarocks/stub/empty.c
 zig cc -shared -o .luarocks/stub/librt.so .luarocks/stub/empty.c
-for rock in busted luacov luautf8; do
+for rock in busted luacov luautf8 lua-zlib; do
   luarocks --lua-version=5.1 --lua-dir="$LJ" --tree="$PWD/.luarocks" \
     LUA_INCDIR="$LJ/include/luajit-2.1" LUA_LIBDIR="$LJ/lib" \
     RT_LIBDIR="$PWD/.luarocks/stub" RT_INCDIR=/usr/include \

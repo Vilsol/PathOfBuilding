@@ -359,18 +359,37 @@ function Copy(text) end
 ---@return string? data
 function Paste() end
 
+-- ⚠️ FORK-LOCAL. Upstream leaves both of these as `return ""` stubs, and that is
+-- not a harmless gap under headless: Modules/DataJewelFileLoader.lua:84 calls Inflate on a
+-- timeless-jewel LUT, gets "", WRITES THAT EMPTY RESULT BACK to the .bin cache (:86-90, which is
+-- where the 0-byte .bin files come from) and returns it. readLUT then builds a malformed table
+-- and the PASSIVE SPEC LOAD FAILS — the build silently falls back to a default Scion with one
+-- allocated node, and every later build in the same process inherits the broken state.
+--
+-- Measured on the 3.29 corpus before this fix: 1290 of 1454 dumped builds had fewer than 5
+-- distinct tree mod sources, against 471 of 6105 at the 3.20 pin.
+--
+-- The LUT payload is RAW ZLIB (magic 78 da), concatenated across the .zip.partN files, so a
+-- plain zlib inflate is the whole job. lua-zlib is installed into the repo-local .luarocks tree
+-- by the bootstrap task.
+local zlib = require("zlib")
+
 ---@param data string
 ---@return string? compressedData
 ---@return string? errMsg
 function Deflate(data)
-	return ""
+	local stream = zlib.deflate()
+	local out = stream(data, "finish")
+	return out
 end
 
 ---@param data string
 ---@return string? data
 ---@return string? errMsg
 function Inflate(data)
-	return ""
+	local stream = zlib.inflate()
+	local out = stream(data, "finish")
+	return out
 end
 
 ---@return integer timeMillis
